@@ -1,10 +1,10 @@
 mod sec;
 mod cli;
+mod backup;
 mod data_crypto;
 fn main() {
 
     let args = cli::parse_args();
-
 
     if let Some(password) = args.password {
         match sec::hash_password(&password) {
@@ -28,6 +28,13 @@ fn main() {
         } else {
             let encrypted_data = data_crypto::encrypt_data(&key, data_str.as_bytes());
             println!("Encrypted data: {}", encrypted_data);
+        }
+    }
+
+    if let (Some(db_url), Some(output_path)) = (args.dbt_url, args.output_path) {
+        match backup::backup_database(&output_path, &db_url) {
+            Ok(_) => println!("Backup successful, saved to {}", output_path),
+            Err(e) => eprintln!("Backup failed: {}", e),
         }
     }
 }
